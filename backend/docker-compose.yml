@@ -1,0 +1,13 @@
+services:
+  trace-agent:
+    build: .
+    container_name: trace-agent-vulnerable
+    ports:
+      - "5001:5000"
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+    volumes:
+      - ./.env:/app/.env
+    restart: unless-stopped
+    privileged: true
