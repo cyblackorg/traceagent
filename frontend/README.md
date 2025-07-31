@@ -1,46 +1,146 @@
-# Getting Started with Create React App
+# TraceAgent Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern React-based frontend for TraceAgent, an AI-powered log analysis assistant. The application provides an intuitive interface for analyzing application logs, network logs, and syslog data through an AI chat interface.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+### 🎯 Core Functionality
+- **Dual Interface Layout**: Log table on the left, AI chat interface on the right
+- **Real-time Log Analysis**: View and search through application, network, and syslog data
+- **AI-Powered Chat**: Interactive chat interface for log analysis queries
+- **Smart Filtering**: Search and filter logs by message, level, source, and details
+- **Responsive Design**: Modern, dark-themed UI optimized for log analysis workflows
 
-### `npm start`
+### 📊 Log Table Features
+- **Multi-source Log Display**: Application logs, network logs, and syslog
+- **Color-coded Log Levels**: ERROR (red), WARNING (orange), INFO (blue), DEBUG (gray)
+- **Source Identification**: Visual chips for different log sources
+- **Search Functionality**: Real-time search across all log fields
+- **Export Capability**: Download filtered log data
+- **Hover Effects**: Interactive table rows with hover states
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### 🤖 AI Chat Interface
+- **Contextual Responses**: AI understands log analysis queries
+- **Smart Suggestions**: Helpful prompts for common log analysis tasks
+- **Real-time Interaction**: Instant responses with loading indicators
+- **Message History**: Persistent chat conversation
+- **Keyboard Shortcuts**: Enter to send, Shift+Enter for new lines
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Technology Stack
 
-### `npm test`
+- **React 18** with TypeScript
+- **Material-UI (MUI)** for component library
+- **Lucide React** for modern icons
+- **Emotion** for styled components
+- **Dark Theme** optimized for log analysis
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Getting Started
 
-### `npm run build`
+### Prerequisites
+- Node.js 16+ 
+- npm or yarn
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Installation
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. Navigate to the frontend directory:
+```bash
+cd frontend
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+2. Install dependencies:
+```bash
+npm install
+```
 
-### `npm run eject`
+3. Start the development server:
+```bash
+npm start
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Available Scripts
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+- `npm start` - Start development server
+- `npm run build` - Build for production
+- `npm test` - Run test suite
+- `npm run eject` - Eject from Create React App
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## Project Structure
 
-## Learn More
+```
+frontend/
+├── public/                 # Static assets
+├── src/
+│   ├── components/         # React components
+│   │   ├── LogTable.tsx   # Log display table
+│   │   └── ChatInterface.tsx # AI chat interface
+│   ├── App.tsx            # Main application component
+│   ├── App.css            # Global styles
+│   └── index.tsx          # Application entry point
+├── package.json           # Dependencies and scripts
+└── README.md             # This file
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Component Architecture
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### LogTable Component
+- Displays logs in a sortable, searchable table
+- Handles filtering and search functionality
+- Color-coded log levels and sources
+- Export and filter actions
+
+### ChatInterface Component
+- Manages AI chat conversation
+- Handles message input and responses
+- Provides contextual AI responses
+- Auto-scrolls to latest messages
+
+## Usage Examples
+
+### Log Analysis Queries
+- "Show me all errors from the last hour"
+- "Analyze performance issues in the application logs"
+- "Check for security events in the network logs"
+- "Find database connection failures"
+
+### Log Table Features
+- Search for specific error messages
+- Filter by log level (ERROR, WARNING, INFO, DEBUG)
+- Filter by source (application, network, syslog)
+- Export filtered results
+
+## Development
+
+### Adding New Features
+1. Create new components in `src/components/`
+2. Update TypeScript interfaces as needed
+3. Follow the existing code style and patterns
+4. Test thoroughly before committing
+
+### Styling Guidelines
+- Use Material-UI's `sx` prop for component styling
+- Follow the dark theme color palette
+- Ensure accessibility with proper contrast ratios
+- Use consistent spacing and typography
+
+## Backend Integration
+
+The frontend is designed to integrate with a backend API. Key integration points:
+
+- **Log Data API**: Fetch real log data from backend
+- **AI Chat API**: Connect to AI backend for responses
+- **Search API**: Backend-powered log search and filtering
+- **Export API**: Backend log export functionality
+
+## Contributing
+
+1. Follow the existing code style
+2. Write clean, maintainable code
+3. Add TypeScript types for all new features
+4. Test your changes thoroughly
+5. Update documentation as needed
+
+## License
+
+This project is part of the TraceAgent log analysis platform.
