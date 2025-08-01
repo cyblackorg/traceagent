@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import { Send, Bot, User } from 'lucide-react';
 import apiService, { Client } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Message {
   id: string;
@@ -29,6 +30,7 @@ interface Message {
 }
 
 const ChatInterface: React.FC = () => {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -58,7 +60,11 @@ const ChatInterface: React.FC = () => {
       try {
         const clientsData = await apiService.getClients();
         setClients(clientsData);
-        if (clientsData.length > 0) {
+        
+        // Set default client based on user's client_id
+        if (user?.client_id) {
+          setSelectedClient(user.client_id);
+        } else if (clientsData.length > 0) {
           setSelectedClient(clientsData[0].id);
         }
       } catch (error) {
@@ -68,7 +74,7 @@ const ChatInterface: React.FC = () => {
     };
 
     fetchClients();
-  }, []);
+  }, [user]);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
@@ -86,7 +92,9 @@ const ChatInterface: React.FC = () => {
     setError(null);
 
     try {
-      const response = await apiService.sendChatMessage(inputValue, selectedClient);
+      // Include authentication token in the request
+      const token = user?.session_token;
+      const response = await apiService.sendChatMessage(inputValue, selectedClient, token);
       
       if (response) {
         const botResponse: Message = {

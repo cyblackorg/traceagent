@@ -40,6 +40,34 @@ export interface Client {
   };
 }
 
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  username: string;
+  role: string;
+  client_id: string | null;
+  permissions: string[];
+  session_token: string;
+  jwt_token: string;
+  created_at: string;
+}
+
+export interface UserInfo {
+  username: string;
+  role: string;
+  client_id: string | null;
+  permissions: string[];
+  created_at: string;
+}
+
+export interface TokenVerification {
+  valid: boolean;
+  user?: UserInfo;
+}
+
 class ApiService {
   private baseUrl: string;
 
@@ -77,11 +105,21 @@ class ApiService {
   }
 
   // Get logs for a specific client and log type
-  async getLogs(clientId: string, logType: string, searchQuery?: string): Promise<LogData | null> {
+  async getLogs(clientId: string, logType: string, searchQuery?: string, token?: string): Promise<LogData | null> {
     try {
       let url = `${this.baseUrl}/api/logs/${clientId}/${logType}`;
+      const params = new URLSearchParams();
+      
       if (searchQuery) {
-        url += `?search=${encodeURIComponent(searchQuery)}`;
+        params.append('search', searchQuery);
+      }
+      
+      if (token) {
+        params.append('token', token);
+      }
+      
+      if (params.toString()) {
+        url += `?${params.toString()}`;
       }
 
       const response = await fetch(url);
@@ -148,6 +186,80 @@ class ApiService {
       return await response.json();
     } catch (error) {
       console.error('Failed to fetch all logs:', error);
+      return null;
+    }
+  }
+
+  // Authentication methods
+  async login(username: string, password: string): Promise<LoginResponse | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Login failed');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Login failed:', error);
+      return null;
+    }
+  }
+
+  async verifyToken(token: string): Promise<TokenVerification | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/auth/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Token verification failed:', error);
+      return null;
+    }
+  }
+
+  async getUsers(): Promise<UserInfo[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/auth/users`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+      return [];
+    }
+  }
+
+  async getUserDetails(username: string): Promise<UserInfo | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/auth/users/${username}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to fetch user details:', error);
       return null;
     }
   }

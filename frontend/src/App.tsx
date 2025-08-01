@@ -1,7 +1,11 @@
-import React from 'react';
-import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, CssBaseline, ThemeProvider, createTheme, AppBar, Toolbar, Typography, Button, IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
+import { LogOut, User, Database, MessageSquare, Users } from 'lucide-react';
 import LogTable from './components/LogTable';
 import ChatInterface from './components/ChatInterface';
+import Login from './components/Login';
+import UserManagement from './components/UserManagement';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import './App.css';
 
 const theme = createTheme({
@@ -23,20 +27,168 @@ const theme = createTheme({
   },
 });
 
-function App() {
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+const AppContent: React.FC = () => {
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const [currentView, setCurrentView] = useState<'main' | 'users'>('main');
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  if (isLoading) {
+    return (
       <Box
         sx={{
           display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
           height: '100vh',
           bgcolor: 'background.default',
         }}
       >
-        <LogTable />
-        <ChatInterface />
+        <Typography variant="h6">Loading...</Typography>
       </Box>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Login />;
+  }
+
+  const menuItems = [
+    {
+      text: 'Log Analysis',
+      icon: <Database size={20} />,
+      view: 'main' as const,
+    },
+    {
+      text: 'User Management',
+      icon: <Users size={20} />,
+      view: 'users' as const,
+    },
+  ];
+
+  return (
+    <Box sx={{ display: 'flex', height: '100vh' }}>
+      {/* Sidebar */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: 240,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: 240,
+            boxSizing: 'border-box',
+            bgcolor: 'background.paper',
+            borderRight: 1,
+            borderColor: 'divider',
+          },
+        }}
+      >
+        <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+            <img 
+              src="/favicon.svg" 
+              alt="TraceAgent Logo" 
+              style={{ width: 24, height: 24 }}
+            />
+            <Typography variant="h6">
+              TraceAgent
+            </Typography>
+          </Box>
+          <Typography variant="body2" color="text.secondary">
+            {user?.client_id || 'Admin'}
+          </Typography>
+        </Box>
+        
+        <List sx={{ pt: 1 }}>
+          {menuItems.map((item) => (
+            <ListItem
+              key={item.text}
+              onClick={() => setCurrentView(item.view)}
+              sx={{
+                cursor: 'pointer',
+                bgcolor: currentView === item.view ? 'primary.main' : 'transparent',
+                color: currentView === item.view ? 'primary.contrastText' : 'inherit',
+                '&:hover': {
+                  bgcolor: currentView === item.view ? 'primary.dark' : 'action.hover',
+                },
+              }}
+            >
+              <ListItemIcon sx={{ color: 'inherit' }}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText primary={item.text} />
+            </ListItem>
+          ))}
+        </List>
+        
+        <Divider sx={{ mt: 'auto' }} />
+        <List>
+          <ListItem>
+            <ListItemIcon>
+              <User size={20} />
+            </ListItemIcon>
+            <ListItemText 
+              primary={user?.username}
+              secondary={user?.role}
+            />
+          </ListItem>
+          <ListItem onClick={logout} sx={{ cursor: 'pointer' }}>
+            <ListItemIcon>
+              <LogOut size={20} />
+            </ListItemIcon>
+            <ListItemText primary="Logout" />
+          </ListItem>
+        </List>
+      </Drawer>
+
+      {/* Main Content */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+        {/* Header */}
+        <AppBar position="static" sx={{ bgcolor: 'background.paper', color: 'text.primary' }}>
+          <Toolbar>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1 }}>
+              <img 
+                src="/favicon.svg" 
+                alt="TraceAgent Logo" 
+                style={{ width: 20, height: 20 }}
+              />
+              <Typography variant="h6">
+                {currentView === 'main' ? 'Log Analysis' : 'User Management'}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <User size={16} />
+                <Typography variant="body2">
+                  {user?.username} ({user?.role})
+                </Typography>
+              </Box>
+            </Box>
+          </Toolbar>
+        </AppBar>
+
+        {/* Content */}
+        <Box sx={{ flex: 1, bgcolor: 'background.default' }}>
+          {currentView === 'main' ? (
+            <Box sx={{ display: 'flex', height: '100%' }}>
+              <LogTable />
+              <ChatInterface />
+            </Box>
+          ) : (
+            <UserManagement />
+          )}
+        </Box>
+      </Box>
+    </Box>
+  );
+};
+
+function App() {
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </ThemeProvider>
   );
 }

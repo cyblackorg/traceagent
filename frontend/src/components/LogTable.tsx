@@ -24,6 +24,7 @@ import {
 import { Search, Download, RefreshCw } from 'lucide-react';
 import { FilterList } from '@mui/icons-material';
 import apiService, { LogData, Client } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 interface LogEntry {
   [key: string]: string | number;
@@ -71,6 +72,7 @@ const getSourceColor = (source: string) => {
 };
 
 const LogTable: React.FC = () => {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSource, setSelectedSource] = useState<string>('all');
   const [selectedClient, setSelectedClient] = useState<string>('maze_bank');
@@ -86,7 +88,11 @@ const LogTable: React.FC = () => {
       try {
         const clientsData = await apiService.getClients();
         setClients(clientsData);
-        if (clientsData.length > 0) {
+        
+        // Set default client based on user's client_id
+        if (user?.client_id) {
+          setSelectedClient(user.client_id);
+        } else if (clientsData.length > 0) {
           setSelectedClient(clientsData[0].id);
         }
       } catch (error) {
@@ -96,7 +102,7 @@ const LogTable: React.FC = () => {
     };
 
     fetchClients();
-  }, []);
+  }, [user]);
 
   // Fetch logs when client or source changes
   useEffect(() => {
@@ -116,7 +122,10 @@ const LogTable: React.FC = () => {
     setError(null);
 
     try {
-      const data = await apiService.getLogs(selectedClient, selectedSource, searchTerm);
+      // Include authentication token in the request
+      const token = user?.session_token;
+      const data = await apiService.getLogs(selectedClient, selectedSource, searchTerm, token);
+      
       if (data) {
         setLogData(data);
         setFilteredLogs(data.full_data || []);
