@@ -74,22 +74,30 @@ const ChatInterface: React.FC = () => {
     const input = userInput.toLowerCase();
     
     if (input.includes('error') || input.includes('failed')) {
-      return 'I found several error logs in your data. The most critical ones are database connection failures and authentication errors. Would you like me to show you the specific error patterns or help you investigate the root cause?';
-    }
-    
-    if (input.includes('performance') || input.includes('slow') || input.includes('latency')) {
-      return 'I\'ve analyzed your performance logs. There are some concerning patterns with high latency in API calls and database queries. The average response time is 2.5s, which exceeds the 1s threshold. Should I help you identify the bottlenecks?';
+      return 'I found several error logs in your data. The most critical ones include:\n\n• Application errors: Database connection failures, authentication errors, and session issues\n• Network errors: Multiple DROP and REJECT actions on suspicious IP addresses\n• System errors: Disk space warnings and failed login attempts\n\nWould you like me to show you the specific error patterns or help you investigate the root cause?';
     }
     
     if (input.includes('security') || input.includes('auth') || input.includes('login')) {
-      return 'Security analysis shows multiple authentication attempts and some failed login events. I\'ve identified suspicious IP addresses and unusual access patterns. Would you like me to create a security report or investigate specific incidents?';
+      return 'Security analysis shows multiple concerning patterns:\n\n• Failed login attempts from various IP addresses\n• SQL injection attempts detected in application logs\n• Suspicious network connections being dropped/rejected\n• Multiple authentication failures across different hosts\n\nI\'ve identified several suspicious IP addresses and unusual access patterns. Would you like me to create a security report or investigate specific incidents?';
     }
     
-    if (input.includes('network') || input.includes('connection')) {
-      return 'Network logs indicate some connectivity issues and high latency periods. I can see connection timeouts and packet loss in certain time windows. Should I help you analyze the network performance trends?';
+    if (input.includes('network') || input.includes('connection') || input.includes('drop') || input.includes('reject')) {
+      return 'Network logs show significant security activity:\n\n• Multiple DROP actions on suspicious connections\n• REJECT actions on ICMP and TCP traffic\n• Various protocols affected: TCP, UDP, ICMP\n• Source IPs from diverse geographic locations\n\nI can see connection timeouts and packet loss in certain time windows. Should I help you analyze the network security trends or identify potential threats?';
     }
     
-    return 'I understand you\'re asking about your logs. I can help you analyze errors, performance issues, security events, or network problems. Could you be more specific about what you\'d like to investigate?';
+    if (input.includes('application') || input.includes('api') || input.includes('endpoint')) {
+      return 'Application logs reveal several patterns:\n\n• Multiple API endpoints being accessed: /api/login, /api/delete, /api/update, /api/export\n• User authentication attempts with various success rates\n• Data export activities and session management\n• Some suspicious activities like SQL injection attempts\n\nWould you like me to analyze specific endpoints or user activities?';
+    }
+    
+    if (input.includes('syslog') || input.includes('system') || input.includes('disk')) {
+      return 'System logs show several issues:\n\n• Multiple disk space warnings across different hosts\n• Failed login attempts on various systems\n• System reboots and process executions\n• SSH and nginx service activities\n\nI can help you investigate system health, disk space issues, or security events. What would you like to focus on?';
+    }
+    
+    if (input.includes('performance') || input.includes('slow') || input.includes('latency')) {
+      return 'Performance analysis across your logs shows:\n\n• Network performance: Various bytes sent/received patterns\n• Application response times from different endpoints\n• System resource usage and disk space issues\n• Connection handling across different protocols\n\nShould I help you identify performance bottlenecks or analyze specific metrics?';
+    }
+    
+    return 'I can help you analyze your logs across three main categories:\n\n• **Application Logs**: API endpoints, user activities, authentication\n• **Network Logs**: Connection attempts, security actions, traffic analysis\n• **System Logs**: Host activities, process monitoring, system health\n\nWhat specific aspect would you like to investigate? Try asking about errors, security events, performance issues, or specific log sources.';
   };
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
