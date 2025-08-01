@@ -26,7 +26,7 @@ import apiService, { UserInfo } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
 const UserManagement: React.FC = () => {
-  const { user } = useAuth();
+  const { user, canManageUsers, isSuperAdmin, isClientAdmin } = useAuth();
   const [users, setUsers] = useState<UserInfo[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(false);
@@ -43,7 +43,21 @@ const UserManagement: React.FC = () => {
 
     try {
       const usersData = await apiService.getUsers();
-      setUsers(usersData);
+      
+      // Filter users based on permissions
+      let filteredUsers = usersData;
+      
+      if (!isSuperAdmin()) {
+        // Client admin can only see users from their own client
+        if (isClientAdmin() && user?.client_id) {
+          filteredUsers = usersData.filter(u => u.client_id === user.client_id);
+        } else {
+          // Regular users cannot see any users
+          filteredUsers = [];
+        }
+      }
+      
+      setUsers(filteredUsers);
     } catch (error) {
       setError('Failed to fetch users');
       console.error('Error fetching users:', error);
@@ -56,8 +70,13 @@ const UserManagement: React.FC = () => {
     try {
       const userDetails = await apiService.getUserDetails(username);
       if (userDetails) {
-        setSelectedUser(userDetails);
-        setDialogOpen(true);
+        // Check if user can manage this specific user
+        if (canManageUsers(userDetails.client_id || undefined)) {
+          setSelectedUser(userDetails);
+          setDialogOpen(true);
+        } else {
+          setError('You do not have permission to view this user');
+        }
       }
     } catch (error) {
       setError('Failed to fetch user details');
@@ -103,6 +122,16 @@ const UserManagement: React.FC = () => {
         <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
           Manage system users and view account information.
         </Typography>
+        {!isSuperAdmin() && isClientAdmin() && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            You can only view and manage users within your client context.
+          </Alert>
+        )}
+        {!isSuperAdmin() && !isClientAdmin() && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            You do not have permission to view or manage users.
+          </Alert>
+        )}
       </Box>
 
       {loading ? (
@@ -125,48 +154,61 @@ const UserManagement: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.username} hover>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <User size={16} />
-                        <Typography variant="body2" fontWeight="bold">
-                          {user.username}
+                {users.length > 0 ? (
+                  users.map((user) => (
+                    <TableRow key={user.username} hover>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <User size={16} />
+                          <Typography variant="body2" fontWeight="bold">
+                            {user.username}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={user.role}
+                          size="small"
+                          sx={{
+                            bgcolor: getRoleColor(user.role),
+                            color: 'white',
+                            fontWeight: 'bold',
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {user.client_id || 'Admin'}
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {new Date(user.created_at).toLocaleDateString()}
                         </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={user.role}
-                        size="small"
-                        sx={{
-                          bgcolor: getRoleColor(user.role),
-                          color: 'white',
-                          fontWeight: 'bold',
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {user.client_id || 'Admin'}
-                    </TableCell>
-                    <TableCell>
+                      </TableCell>
+                      <TableCell>
+                        <Tooltip title="View User Details">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleViewUser(user.username)}
+                            color="primary"
+                          >
+                            <Eye size={16} />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} align="center">
                       <Typography variant="body2" color="text.secondary">
-                        {new Date(user.created_at).toLocaleDateString()}
+                        {!isSuperAdmin() && !isClientAdmin() 
+                          ? 'You do not have permission to view users'
+                          : 'No users found for your access level'
+                        }
                       </Typography>
                     </TableCell>
-                    <TableCell>
-                      <Tooltip title="View User Details">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleViewUser(user.username)}
-                          color="primary"
-                        >
-                          <Eye size={16} />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </TableContainer>

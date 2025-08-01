@@ -62,7 +62,7 @@ traceagent/
 ### Backend
 - **Flask** with Flask-RESTX for API
 - **CORS** enabled for frontend integration
-- **Deepseek AI** integration for chat responses
+- **Multi-Provider AI** integration (Deepseek, OpenAI, Anthropic, Google AI)
 - **S3 Log Storage** for real log data
 - **Swagger UI** for API documentation
 
@@ -76,25 +76,61 @@ traceagent/
 
 The easiest way to run TraceAgent is using Docker Compose:
 
-1. **Start the development environment:**
+1. **Configure LLM Provider (Optional):**
+```bash
+# Copy example environment file
+cp env.example .env
+
+# Edit .env and configure your preferred AI provider
+# See LLM_CONFIGURATION.md for detailed instructions
+```
+
+2. **Start the development environment:**
 ```bash
 docker compose up
 ```
 
-2. **Access the application:**
+3. **Access the application:**
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:5001
 - **Backend Swagger**: http://localhost:5001/swagger/
 
-3. **View logs:**
+4. **View logs:**
 ```bash
 docker compose logs -f
 ```
 
-4. **Stop services:**
+5. **Stop services:**
 ```bash
 docker compose down
 ```
+
+### LLM Provider Configuration
+
+TraceAgent supports multiple AI providers for the chat interface. You can configure your preferred provider using environment variables:
+
+#### Supported Providers
+- **Deepseek AI** (default) - Free tier available
+- **OpenAI** - GPT-3.5-turbo, GPT-4
+- **Anthropic Claude** - Claude-3 models
+- **Google AI** - Gemini Pro
+
+#### Quick Configuration
+```bash
+# Using OpenAI
+export LLM_PROVIDER=openai
+export OPENAI_API_KEY=your-api-key-here
+
+# Using Claude
+export LLM_PROVIDER=anthropic
+export ANTHROPIC_API_KEY=your-api-key-here
+
+# Using Google AI
+export LLM_PROVIDER=google
+export GOOGLE_API_KEY=your-api-key-here
+```
+
+For detailed configuration instructions, see [LLM_CONFIGURATION.md](backend/LLM_CONFIGURATION.md).
 
 ### Docker Commands
 

@@ -6,9 +6,28 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
+    # LLM Provider Configuration
+    LLM_PROVIDER = os.getenv('LLM_PROVIDER', 'deepseek').lower()
+    
     # Deepseek AI Configuration
     DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY', 'your-deepseek-api-key-here')
     DEEPSEEK_BASE_URL = "https://api.deepseek.com/v1"
+    DEEPSEEK_MODEL = os.getenv('DEEPSEEK_MODEL', 'deepseek-chat')
+    
+    # OpenAI Configuration
+    OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', 'your-openai-api-key-here')
+    OPENAI_BASE_URL = os.getenv('OPENAI_BASE_URL', 'https://api.openai.com/v1')
+    OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-3.5-turbo')
+    
+    # Anthropic Configuration
+    ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY', 'your-anthropic-api-key-here')
+    ANTHROPIC_BASE_URL = "https://api.anthropic.com"
+    ANTHROPIC_MODEL = os.getenv('ANTHROPIC_MODEL', 'claude-3-sonnet-20240229')
+    
+    # Google AI Configuration
+    GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY', 'your-google-api-key-here')
+    GOOGLE_BASE_URL = "https://generativelanguage.googleapis.com/v1"
+    GOOGLE_MODEL = os.getenv('GOOGLE_MODEL', 'gemini-pro')
     
     # Database Configuration (Intentionally vulnerable SQLite)
     DATABASE_PATH = 'vulnerable_logs.db'

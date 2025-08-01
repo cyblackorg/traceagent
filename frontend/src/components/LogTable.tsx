@@ -71,7 +71,11 @@ const getSourceColor = (source: string) => {
   }
 };
 
-const LogTable: React.FC = () => {
+interface LogTableProps {
+  logsData?: any;
+}
+
+const LogTable: React.FC<LogTableProps> = ({ logsData }) => {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSource, setSelectedSource] = useState<string>('all');
@@ -114,6 +118,51 @@ const LogTable: React.FC = () => {
       setLogData(null);
     }
   }, [selectedClient, selectedSource]);
+
+  // Handle logs data from chat responses
+  useEffect(() => {
+    if (logsData) {
+      console.log('Processing logs data from chat:', logsData);
+      console.log('LogsData type:', typeof logsData);
+      console.log('LogsData keys:', Object.keys(logsData));
+      
+      // Convert logs data to the format expected by the table
+      const processedLogs: LogEntry[] = [];
+      
+      Object.entries(logsData).forEach(([logType, logData]: [string, any]) => {
+        if (Array.isArray(logData)) {
+          // Direct array of log entries
+          logData.forEach((entry: any) => {
+            processedLogs.push({
+              ...entry,
+              source: logType
+            });
+          });
+        } else if (logData && typeof logData === 'object' && !logData.error) {
+          // Log data object with full_data
+          if (logData.full_data && Array.isArray(logData.full_data)) {
+            logData.full_data.forEach((entry: any) => {
+              processedLogs.push({
+                ...entry,
+                source: logType
+              });
+            });
+          }
+        }
+      });
+      
+      setFilteredLogs(processedLogs);
+      setLogData({
+        client: 'Chat Response',
+        log_type: 'mixed',
+        total_entries: processedLogs.length,
+        columns: processedLogs.length > 0 ? Object.keys(processedLogs[0]) : [],
+        sample_data: processedLogs.slice(0, 10),
+        full_data: processedLogs,
+        url: 'chat-response'
+      });
+    }
+  }, [logsData]);
 
   const fetchLogs = async () => {
     if (!selectedClient || selectedSource === 'all') return;
@@ -230,11 +279,12 @@ const LogTable: React.FC = () => {
     <Box
       sx={{
         width: '60%',
-        height: '100%',
+        height: '100vh',
         display: 'flex',
         flexDirection: 'column',
         borderRight: 1,
         borderColor: 'divider',
+        overflow: 'hidden', // Prevent container overflow
       }}
     >
       <Box
@@ -243,6 +293,7 @@ const LogTable: React.FC = () => {
           borderBottom: 1,
           borderColor: 'divider',
           bgcolor: 'background.paper',
+          flexShrink: 0, // Prevent header from shrinking
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -325,9 +376,17 @@ const LogTable: React.FC = () => {
         component={Paper}
         sx={{
           flexGrow: 1,
+          maxHeight: 'calc(100vh - 200px)', // Set maximum height
+          overflow: 'auto', // Enable scrolling
           bgcolor: 'background.paper',
           '& .MuiTableRow-root:hover': {
             bgcolor: 'action.hover',
+          },
+          '& .MuiTableHead-root': {
+            position: 'sticky',
+            top: 0,
+            zIndex: 1,
+            bgcolor: 'background.paper',
           },
         }}
       >
@@ -336,7 +395,7 @@ const LogTable: React.FC = () => {
             <CircularProgress />
           </Box>
         ) : logData && filteredLogs.length > 0 ? (
-          <Table stickyHeader>
+          <Table stickyHeader sx={{ minWidth: 650 }}>
             <TableHead>
               <TableRow>
                 {logData.columns.map((column, index) => (

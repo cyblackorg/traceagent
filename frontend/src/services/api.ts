@@ -27,6 +27,37 @@ export interface ChatResponse {
   client_id: string;
   timestamp: string;
   session_token: string;
+  // New fields for enhanced responses
+  message?: string; // For new response format
+  logs?: { [logType: string]: LogData };
+  insights?: SecurityInsights;
+  correlations?: SecurityCorrelations;
+  security_alert?: string;
+  suspicious_activity?: string;
+  sql_query?: string;
+  execution_result?: any;
+  error?: string;
+  details?: string;
+  provider?: string;
+  model?: string;
+  processed?: boolean;
+}
+
+export interface SecurityInsights {
+  total_events: number;
+  security_events: number;
+  failed_logins: number;
+  sql_injections: number;
+  blocked_connections: number;
+  system_warnings: number;
+  suspicious_ips: string[];
+  affected_users: string[];
+  critical_endpoints: string[];
+}
+
+export interface SecurityCorrelations {
+  cross_log_ips?: { [ip: string]: { log_types: string[]; event_count: number } };
+  user_activity?: { [user: string]: { log_types: string[]; event_count: number } };
 }
 
 export interface Client {

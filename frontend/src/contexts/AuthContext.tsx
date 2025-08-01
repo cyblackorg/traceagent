@@ -9,6 +9,11 @@ interface AuthContextType {
   logout: () => void;
   error: string | null;
   clearError: () => void;
+  // Role-based access control
+  isSuperAdmin: () => boolean;
+  isClientAdmin: () => boolean;
+  canSwitchClient: () => boolean;
+  canManageUsers: (targetClientId?: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -98,6 +103,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setError(null);
   };
 
+  // Role-based access control functions
+  const isSuperAdmin = () => {
+    return user?.role === 'super_admin' || user?.role === 'vendor';
+  };
+
+  const isClientAdmin = () => {
+    return user?.role === 'client_admin' || user?.role === 'admin';
+  };
+
+  const canSwitchClient = () => {
+    // Only super admin (vendor) can switch client context
+    return isSuperAdmin();
+  };
+
+  const canManageUsers = (targetClientId?: string) => {
+    if (!user) return false;
+    
+    // Super admin can manage users for all clients
+    if (isSuperAdmin()) return true;
+    
+    // Client admin can only manage users within their own client context
+    if (isClientAdmin()) {
+      return targetClientId ? targetClientId === user.client_id : true;
+    }
+    
+    return false;
+  };
+
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user,
@@ -106,6 +139,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     error,
     clearError,
+    isSuperAdmin,
+    isClientAdmin,
+    canSwitchClient,
+    canManageUsers,
   };
 
   return (

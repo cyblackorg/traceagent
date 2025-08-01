@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, CssBaseline, ThemeProvider, createTheme, AppBar, Toolbar, Typography, Button, IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider } from '@mui/material';
+import { Box, CssBaseline, ThemeProvider, createTheme, AppBar, Toolbar, Typography, Button, IconButton, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, GlobalStyles } from '@mui/material';
 import { LogOut, User, Database, MessageSquare, Users } from 'lucide-react';
 import LogTable from './components/LogTable';
 import ChatInterface from './components/ChatInterface';
@@ -28,8 +28,9 @@ const theme = createTheme({
 });
 
 const AppContent: React.FC = () => {
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, logout, canManageUsers } = useAuth();
   const [currentView, setCurrentView] = useState<'main' | 'users'>('main');
+  const [logsData, setLogsData] = useState<any>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   if (isLoading) {
@@ -58,11 +59,12 @@ const AppContent: React.FC = () => {
       icon: <Database size={20} />,
       view: 'main' as const,
     },
-    {
+    // Only show User Management if user has permission to manage users
+    ...(canManageUsers() ? [{
       text: 'User Management',
       icon: <Users size={20} />,
       view: 'users' as const,
-    },
+    }] : []),
   ];
 
   return (
@@ -170,8 +172,8 @@ const AppContent: React.FC = () => {
         <Box sx={{ flex: 1, bgcolor: 'background.default' }}>
           {currentView === 'main' ? (
             <Box sx={{ display: 'flex', height: '100%' }}>
-              <LogTable />
-              <ChatInterface />
+              <LogTable logsData={logsData} />
+              <ChatInterface onLogsReceived={setLogsData} />
             </Box>
           ) : (
             <UserManagement />
@@ -186,6 +188,20 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <GlobalStyles
+        styles={{
+          '@keyframes typing': {
+            '0%, 60%, 100%': {
+              transform: 'translateY(0)',
+              opacity: 0.4,
+            },
+            '30%': {
+              transform: 'translateY(-10px)',
+              opacity: 1,
+            },
+          },
+        }}
+      />
       <AuthProvider>
         <AppContent />
       </AuthProvider>
