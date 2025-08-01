@@ -11,8 +11,14 @@ import {
   Divider,
   Chip,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Alert,
 } from '@mui/material';
 import { Send, Bot, User } from 'lucide-react';
+import apiService, { Client } from '../services/api';
 
 interface Message {
   id: string;
@@ -33,6 +39,9 @@ const ChatInterface: React.FC = () => {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<string>('maze_bank');
+  const [clients, setClients] = useState<Client[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -42,6 +51,24 @@ const ChatInterface: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Fetch available clients on component mount
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const clientsData = await apiService.getClients();
+        setClients(clientsData);
+        if (clientsData.length > 0) {
+          setSelectedClient(clientsData[0].id);
+        }
+      } catch (error) {
+        setError('Failed to fetch clients');
+        console.error('Error fetching clients:', error);
+      }
+    };
+
+    fetchClients();
+  }, []);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
@@ -56,48 +83,43 @@ const ChatInterface: React.FC = () => {
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
     setIsLoading(true);
+    setError(null);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const botResponse: Message = {
+    try {
+      const response = await apiService.sendChatMessage(inputValue, selectedClient);
+      
+      if (response) {
+        const botResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          text: response.response,
+          sender: 'bot',
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, botResponse]);
+      } else {
+        // Fallback response if API fails
+        const fallbackResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          text: 'I apologize, but I\'m having trouble connecting to the backend. Please check if the backend server is running and try again.',
+          sender: 'bot',
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, fallbackResponse]);
+        setError('Failed to get response from AI backend');
+      }
+    } catch (error) {
+      console.error('Chat error:', error);
+      const errorResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: generateBotResponse(inputValue),
+        text: 'I\'m experiencing technical difficulties. Please check your connection and try again.',
         sender: 'bot',
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, botResponse]);
+      setMessages(prev => [...prev, errorResponse]);
+      setError('Failed to send message to backend');
+    } finally {
       setIsLoading(false);
-    }, 1500);
-  };
-
-  const generateBotResponse = (userInput: string): string => {
-    const input = userInput.toLowerCase();
-    
-    if (input.includes('error') || input.includes('failed')) {
-      return 'I found several error logs in your data. The most critical ones include:\n\n• Application errors: Database connection failures, authentication errors, and session issues\n• Network errors: Multiple DROP and REJECT actions on suspicious IP addresses\n• System errors: Disk space warnings and failed login attempts\n\nWould you like me to show you the specific error patterns or help you investigate the root cause?';
     }
-    
-    if (input.includes('security') || input.includes('auth') || input.includes('login')) {
-      return 'Security analysis shows multiple concerning patterns:\n\n• Failed login attempts from various IP addresses\n• SQL injection attempts detected in application logs\n• Suspicious network connections being dropped/rejected\n• Multiple authentication failures across different hosts\n\nI\'ve identified several suspicious IP addresses and unusual access patterns. Would you like me to create a security report or investigate specific incidents?';
-    }
-    
-    if (input.includes('network') || input.includes('connection') || input.includes('drop') || input.includes('reject')) {
-      return 'Network logs show significant security activity:\n\n• Multiple DROP actions on suspicious connections\n• REJECT actions on ICMP and TCP traffic\n• Various protocols affected: TCP, UDP, ICMP\n• Source IPs from diverse geographic locations\n\nI can see connection timeouts and packet loss in certain time windows. Should I help you analyze the network security trends or identify potential threats?';
-    }
-    
-    if (input.includes('application') || input.includes('api') || input.includes('endpoint')) {
-      return 'Application logs reveal several patterns:\n\n• Multiple API endpoints being accessed: /api/login, /api/delete, /api/update, /api/export\n• User authentication attempts with various success rates\n• Data export activities and session management\n• Some suspicious activities like SQL injection attempts\n\nWould you like me to analyze specific endpoints or user activities?';
-    }
-    
-    if (input.includes('syslog') || input.includes('system') || input.includes('disk')) {
-      return 'System logs show several issues:\n\n• Multiple disk space warnings across different hosts\n• Failed login attempts on various systems\n• System reboots and process executions\n• SSH and nginx service activities\n\nI can help you investigate system health, disk space issues, or security events. What would you like to focus on?';
-    }
-    
-    if (input.includes('performance') || input.includes('slow') || input.includes('latency')) {
-      return 'Performance analysis across your logs shows:\n\n• Network performance: Various bytes sent/received patterns\n• Application response times from different endpoints\n• System resource usage and disk space issues\n• Connection handling across different protocols\n\nShould I help you identify performance bottlenecks or analyze specific metrics?';
-    }
-    
-    return 'I can help you analyze your logs across three main categories:\n\n• **Application Logs**: API endpoints, user activities, authentication\n• **Network Logs**: Connection attempts, security actions, traffic analysis\n• **System Logs**: Host activities, process monitoring, system health\n\nWhat specific aspect would you like to investigate? Try asking about errors, security events, performance issues, or specific log sources.';
   };
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
@@ -105,6 +127,10 @@ const ChatInterface: React.FC = () => {
       event.preventDefault();
       handleSendMessage();
     }
+  };
+
+  const handleClientChange = (event: any) => {
+    setSelectedClient(event.target.value);
   };
 
   return (
@@ -125,7 +151,7 @@ const ChatInterface: React.FC = () => {
           bgcolor: 'background.paper',
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
           <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
             <Bot size={20} />
           </Avatar>
@@ -137,6 +163,27 @@ const ChatInterface: React.FC = () => {
             sx={{ ml: 'auto' }}
           />
         </Box>
+
+        <FormControl size="small" fullWidth>
+          <InputLabel>Client Context</InputLabel>
+          <Select
+            value={selectedClient}
+            label="Client Context"
+            onChange={handleClientChange}
+          >
+            {clients.map((client) => (
+              <MenuItem key={client.id} value={client.id}>
+                {client.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        {error && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {error}
+          </Alert>
+        )}
       </Box>
 
       <Box

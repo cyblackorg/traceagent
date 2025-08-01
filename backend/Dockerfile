@@ -17,5 +17,5 @@ COPY . .
 # Expose port
 EXPOSE 5000
 
-# Start application
-CMD ["python3", "app.py"]
+# Start application with hot reload
+CMD ["python3", "-m", "flask", "run", "--host=0.0.0.0", "--port=5000", "--reload"]

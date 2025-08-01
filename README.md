@@ -15,9 +15,16 @@ traceagent/
 │   │   ├── components/
 │   │   │   ├── LogTable.tsx      # Log display and filtering
 │   │   │   └── ChatInterface.tsx # AI chat interface
+│   │   ├── services/
+│   │   │   └── api.ts            # Backend API integration
 │   │   └── App.tsx               # Main application component
 │   └── README.md                 # Frontend documentation
-├── backend/            # Backend API (under development)
+├── backend/            # Flask-based backend API
+│   ├── app.py         # Main Flask application
+│   ├── log_fetcher.py # Log data fetching service
+│   ├── models.py      # Data models
+│   ├── config.py      # Configuration
+│   └── README.md      # Backend documentation
 └── README.md          # This file
 ```
 
@@ -29,6 +36,7 @@ traceagent/
 - **Real-time Log Display**: Interactive table with search and filtering
 - **Smart Log Classification**: Automatic categorization by level and source
 - **Export Functionality**: Download filtered log data
+- **Multi-client Support**: Switch between different client organizations
 
 ### 📊 Log Analysis Features
 - **Error Detection**: Identify and categorize errors across all log sources
@@ -51,15 +59,86 @@ traceagent/
 - **Lucide React** for modern icons
 - **Dark Theme** optimized for log analysis workflows
 
-### Backend (Planned)
-- **API Framework** (to be determined)
-- **Database** for log storage and indexing
-- **AI/ML Integration** for intelligent log analysis
-- **Real-time Processing** for live log streaming
+### Backend
+- **Flask** with Flask-RESTX for API
+- **CORS** enabled for frontend integration
+- **Deepseek AI** integration for chat responses
+- **S3 Log Storage** for real log data
+- **Swagger UI** for API documentation
 
 ## Getting Started
 
-### Frontend Development
+### Prerequisites
+- Docker and Docker Compose
+- OR Node.js 16+ and Python 3.8+ (for local development)
+
+### Quick Start with Docker (Recommended)
+
+The easiest way to run TraceAgent is using Docker Compose:
+
+1. **Start the development environment:**
+```bash
+docker compose up
+```
+
+2. **Access the application:**
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:5001
+- **Backend Swagger**: http://localhost:5001/swagger/
+
+3. **View logs:**
+```bash
+docker compose logs -f
+```
+
+4. **Stop services:**
+```bash
+docker compose down
+```
+
+### Docker Commands
+
+```bash
+docker compose up          # Start services with hot reloading
+docker compose up -d       # Start services in background
+docker compose down        # Stop services
+docker compose logs -f     # View logs in real-time
+docker compose build       # Rebuild images
+docker compose restart     # Restart services
+```
+
+### Local Development Setup
+
+If you prefer to run services locally without Docker:
+
+#### Backend Setup
+
+1. Navigate to the backend directory:
+```bash
+cd backend
+```
+
+2. Install Python dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+3. Set up environment variables:
+```bash
+cp .env.template .env
+# Edit .env and add your Deepseek API key
+```
+
+4. Start the backend server:
+```bash
+python app.py
+```
+
+The backend will be available at:
+- **API**: http://localhost:5001
+- **Swagger UI**: http://localhost:5001/swagger/
+
+#### Frontend Setup
 
 1. Navigate to the frontend directory:
 ```bash
@@ -78,14 +157,38 @@ npm start
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-### Backend Development
+## Available Clients
 
-The backend is currently under development by another team member. Once available, it will provide:
+The system supports multiple client organizations:
 
-- RESTful API for log data access
-- AI integration for chat responses
-- Real-time log streaming
-- Advanced search and filtering capabilities
+- **Maze Bank** - Financial services
+- **LifeInvader Social** - Social media platform  
+- **Trevor Phillips & Associates** - Consulting firm
+
+Each client has access to:
+- **Application Logs** - API endpoints, user activities, authentication
+- **Network Logs** - Connection attempts, security actions, traffic analysis
+- **System Logs** - Host activities, process monitoring, system health
+
+## API Integration
+
+### Frontend-Backend Communication
+
+The frontend communicates with the backend through the following endpoints:
+
+- **`GET /api/health`** - Health check
+- **`GET /api/config`** - Get available clients
+- **`GET /api/logs/{client_id}/{log_type}`** - Fetch log data
+- **`POST /api/chat`** - Send messages to AI assistant
+- **`GET /api/admin/all-logs`** - Admin access to all logs
+
+### Key Features
+
+1. **Real-time Log Fetching**: Logs are fetched from S3 storage
+2. **Dynamic Client Selection**: Switch between different organizations
+3. **AI Chat Integration**: Real AI responses based on log analysis
+4. **Error Handling**: Graceful fallbacks for connection issues
+5. **Loading States**: Visual feedback during data fetching
 
 ## Usage Examples
 
@@ -100,45 +203,35 @@ The backend is currently under development by another team member. Once availabl
 - Search for specific error messages or patterns
 - Filter by log level (ERROR, WARNING, INFO, DEBUG)
 - Filter by source (application, network, syslog)
+- Switch between different client organizations
 - Export filtered results for further analysis
 
-## Development Roadmap
+## Development
 
-### Phase 1: Frontend Foundation ✅
-- [x] React application setup with TypeScript
-- [x] Material-UI component library integration
-- [x] Log table component with search and filtering
-- [x] AI chat interface with mock responses
-- [x] Dark theme and responsive design
+### Backend Development
+- **API Endpoints**: Add new endpoints in `app.py`
+- **Log Fetching**: Modify `log_fetcher.py` for different data sources
+- **AI Integration**: Update `vulnerable_agent.py` for AI responses
+- **Configuration**: Update `config.py` for new clients or settings
 
-### Phase 2: Backend Integration (In Progress)
-- [ ] API development for log data access
-- [ ] Real-time log streaming
-- [ ] AI integration for chat responses
-- [ ] Advanced search and filtering
+### Frontend Development
+- **Components**: Add new components in `src/components/`
+- **API Service**: Update `src/services/api.ts` for new endpoints
+- **Styling**: Use Material-UI's `sx` prop for component styling
+- **TypeScript**: Add proper types for all new features
 
-### Phase 3: Advanced Features (Planned)
-- [ ] Real-time log monitoring
-- [ ] Alert system for critical issues
-- [ ] Dashboard with analytics
-- [ ] User authentication and permissions
-- [ ] Log retention and archival
+## Security Note
+
+⚠️ **Important**: The backend contains intentional security vulnerabilities for educational purposes. This is designed for training and testing security scenarios in a controlled environment. **DO NOT use in production!**
 
 ## Contributing
 
 1. **Frontend Development**: Work in the `frontend/` directory
-2. **Backend Development**: Coordinate with the backend team
+2. **Backend Development**: Work in the `backend/` directory
 3. **Documentation**: Keep README files updated
-4. **Code Quality**: Follow TypeScript best practices
+4. **Code Quality**: Follow TypeScript and Python best practices
 5. **Testing**: Ensure all features are thoroughly tested
 
 ## License
 
 This project is part of the TraceAgent log analysis platform.
-
-## Support
-
-For questions or issues:
-- Frontend issues: Check the `frontend/README.md`
-- Backend integration: Coordinate with the backend development team
-- General questions: Review this README and project documentation
