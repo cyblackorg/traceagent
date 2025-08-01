@@ -97,7 +97,7 @@ User: {user_input}"""
                 "message": response["content"]
             }
         else:
-        return {
+            return {
                 "type": "error",
                 "message": f"Failed to process chat request: {response.get('error')}"
             }
