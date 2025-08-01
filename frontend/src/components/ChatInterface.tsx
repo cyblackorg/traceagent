@@ -370,25 +370,21 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onLogsReceived }) => {
           />
         </Box>
 
-        <FormControl size="small" fullWidth>
-          <InputLabel>Client Context</InputLabel>
-          <Select
-            value={selectedClient}
-            label="Client Context"
-            onChange={handleClientChange}
-            disabled={!canSwitchClient()}
-          >
-            {clients.map((client) => (
-              <MenuItem key={client.id} value={client.id}>
-                {client.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        {!canSwitchClient() && (
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-            Only super admins can switch client context
-          </Typography>
+        {canSwitchClient() && (
+          <FormControl size="small" fullWidth>
+            <InputLabel>Client Context</InputLabel>
+            <Select
+              value={selectedClient}
+              label="Client Context"
+              onChange={handleClientChange}
+            >
+              {clients.map((client) => (
+                <MenuItem key={client.id} value={client.id}>
+                  {client.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         )}
 
         {error && (

@@ -66,6 +66,8 @@ const getSourceColor = (source: string) => {
       return '#2196f3';
     case 'syslog':
       return '#ff9800';
+    case 'AI':
+      return '#9c27b0';
     default:
       return '#757575';
   }
@@ -161,11 +163,14 @@ const LogTable: React.FC<LogTableProps> = ({ logsData }) => {
         full_data: processedLogs,
         url: 'chat-response'
       });
+      
+      // Automatically switch to "AI" source when logs come from chat
+      setSelectedSource('AI');
     }
   }, [logsData]);
 
   const fetchLogs = async () => {
-    if (!selectedClient || selectedSource === 'all') return;
+    if (!selectedClient || selectedSource === 'all' || selectedSource === 'AI') return;
 
     setLoading(true);
     setError(null);
@@ -183,7 +188,8 @@ const LogTable: React.FC<LogTableProps> = ({ logsData }) => {
         setFilteredLogs([]);
       }
     } catch (error) {
-      setError('Failed to fetch logs');
+      console.error('Error fetching logs:', error);
+      setError('Failed to fetch logs. Please try again.');
       setFilteredLogs([]);
     } finally {
       setLoading(false);
@@ -270,6 +276,8 @@ const LogTable: React.FC<LogTableProps> = ({ logsData }) => {
         return 'Network';
       case 'syslog':
         return 'Syslog';
+      case 'AI':
+        return 'AI Query Results';
       default:
         return source;
     }
@@ -344,6 +352,7 @@ const LogTable: React.FC<LogTableProps> = ({ logsData }) => {
               <MenuItem value="app_logs">Application</MenuItem>
               <MenuItem value="network_logs">Network</MenuItem>
               <MenuItem value="syslog">Syslog</MenuItem>
+              <MenuItem value="AI">AI Query Results</MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -414,6 +423,8 @@ const LogTable: React.FC<LogTableProps> = ({ logsData }) => {
             <Typography variant="body1" color="text.secondary">
               {selectedSource === 'all' 
                 ? 'Select a log source to view data' 
+                : selectedSource === 'AI'
+                ? 'Ask the AI chatbot to query logs'
                 : 'No logs found for the selected criteria'}
             </Typography>
           </Box>
