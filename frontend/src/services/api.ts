@@ -1,6 +1,7 @@
 // API service for communicating with the TraceAgent backend
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+// const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://traceagent.fezzant.com:5001';
 
 export interface LogEntry {
   [key: string]: string | number;
