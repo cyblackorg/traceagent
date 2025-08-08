@@ -1,3 +1,32 @@
+## Frontend Environment Configuration
+
+This frontend (Create React App) reads configuration from environment variables prefixed with `REACT_APP_`.
+
+Recommended files (ignored by git):
+- `.env.development.local` for local development
+- `.env.production.local` for production overrides
+
+Available variables:
+- `REACT_APP_ENV` — application environment (development|production|staging)
+- `REACT_APP_API_BASE_URL` — backend API base URL (e.g., http://localhost:5001)
+- `REACT_APP_LLM_PROVIDER` — LLM provider key (openai|deepseek|anthropic|google)
+- `REACT_APP_LLM_API_KEY` — API key for the chosen LLM (if the frontend needs it)
+- `REACT_APP_LLM_MODEL` — default LLM model id
+- `REACT_APP_LLM_BASE_URL` — optional custom LLM base URL
+
+Example `.env.development.local`:
+
+```
+REACT_APP_ENV=development
+REACT_APP_API_BASE_URL=http://localhost:5001
+REACT_APP_LLM_PROVIDER=openai
+REACT_APP_LLM_API_KEY=
+REACT_APP_LLM_MODEL=gpt-4o-mini
+REACT_APP_LLM_BASE_URL=
+```
+
+Note: CRA inlines env vars at build time. After changing `.env*` files, restart the dev server.
+
 # TraceAgent Frontend
 
 A modern React-based frontend for TraceAgent, an AI-powered log analysis assistant. The application provides an intuitive interface for analyzing application logs, network logs, and syslog data through an AI chat interface.
