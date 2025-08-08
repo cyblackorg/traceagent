@@ -78,7 +78,7 @@ interface LogTableProps {
 }
 
 const LogTable: React.FC<LogTableProps> = ({ logsData }) => {
-  const { user } = useAuth();
+  const { user, canSwitchClient } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSource, setSelectedSource] = useState<string>('all');
   const [selectedClient, setSelectedClient] = useState<string>('maze_bank');
@@ -326,20 +326,22 @@ const LogTable: React.FC<LogTableProps> = ({ logsData }) => {
         </Box>
         
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Client</InputLabel>
-            <Select
-              value={selectedClient}
-              label="Client"
-              onChange={handleClientChange}
-            >
-              {clients.map((client) => (
-                <MenuItem key={client.id} value={client.id}>
-                  {client.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          {canSwitchClient() && (
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>Client</InputLabel>
+              <Select
+                value={selectedClient}
+                label="Client"
+                onChange={handleClientChange}
+              >
+                {clients.map((client) => (
+                  <MenuItem key={client.id} value={client.id}>
+                    {client.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
           
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Source</InputLabel>

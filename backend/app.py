@@ -314,33 +314,25 @@ class LogAccess(Resource):
     @logs_ns.param('token', 'Authentication token (optional)', _in='query')
     def get(self, client_id, log_type):
         """
-        📊 Get Client Logs (VULNERABILITY: Weak Authorization)
+        📊 Get Client Logs (VULNERABILITY: Broken Access Control)
         
-        Retrieve logs with weak authorization checks.
+        Retrieve logs with NO authorization checks - demonstrates broken access control.
         
-        **🚨 Vulnerabilities:**
-        - BOLA: Users can access other clients' logs
-        - Weak token validation
-        - No proper session management
+        **🚨 Critical Vulnerability:**
+        - BOLA: Any user can access ANY client's logs by changing client_id in URL
+        - Frontend-only restrictions - easily bypassed
+        - Token parameter is completely ignored
         
         **🎯 Attack examples:**
-        - Access competitors' logs: `/api/logs/trevor_phillips/app_logs?token=maze-user-session-001`
-        - Bypass with admin token: `?token=admin-session-123`
-        - Predictable tokens: `?token=maze-admin-session-001`
+        - Access any client: `/api/logs/trevor_phillips/app_logs` (no token needed)
+        - Frontend shows dropdown only to admins, but API accepts any client_id
+        - Change URL manually: `/api/logs/lifeinvader/network_logs`
         """
         try:
-            # VULNERABILITY: Weak authorization check
+            # VULNERABILITY: NO AUTHORIZATION - Accept any client_id regardless of user permissions
             token = request.args.get('token')
-            user_data = None
-            
-            if token:
-                user_data = auth.get_user_by_token(token)
-            
-            # VULNERABILITY: BOLA - Weak client access check
-            if user_data and not auth.check_client_access(user_data, client_id):
-                # VULNERABILITY: Still allows access for admin users
-                if user_data.get('role') != 'admin':
-                    return {"error": "Access denied"}, 403
+            # NOTE: Token is completely ignored - any user can access any client's logs
+            # This demonstrates broken access control where frontend checks are bypassed
             
             search_query = request.args.get('search', None)
             
