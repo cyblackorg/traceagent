@@ -46,9 +46,7 @@ services:
         - REACT_APP_ENV=${REACT_APP_ENV:-production}
     ports:
       - "3000:80"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+    # No bind mounts in production to avoid volume merge issues
     environment:
       - REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL:-/api}
       - REACT_APP_ENV=${REACT_APP_ENV:-production}
