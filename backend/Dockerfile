@@ -17,5 +17,5 @@ COPY . .
 # Expose port
 EXPOSE 5000
 
-# Start application with hot reload
-CMD ["python3", "-m", "flask", "run", "--host=0.0.0.0", "--port=5000", "--reload"]
+# Start application with Gunicorn in production
+CMD ["gunicorn", "-w", "3", "-b", "0.0.0.0:5000", "app:app"]

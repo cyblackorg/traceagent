@@ -15,10 +15,11 @@ export interface AppConfig {
 }
 
 const env = (process.env.REACT_APP_ENV || process.env.NODE_ENV || 'development').toLowerCase();
+const isProduction = env === 'production';
 
 const apiBaseUrl =
   process.env.REACT_APP_API_BASE_URL?.trim() ||
-  'http://localhost:5001';
+  (isProduction ? '/api' : 'http://localhost:5001');
 
 const llmConfig: LLMConfig = {
   provider: process.env.REACT_APP_LLM_PROVIDER?.trim() || 'openai',

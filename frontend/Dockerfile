@@ -1,21 +1,31 @@
-FROM node:18-alpine
+## Build stage
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Set node options to increase memory limit
 ENV NODE_OPTIONS=--max_old_space_size=2048
 
-# Copy package files
 COPY package*.json ./
+RUN npm ci || npm install
 
-# Install dependencies
-RUN npm install
-
-# Copy source code
 COPY . .
 
-# Expose port
-EXPOSE 3000
+# Expect production env vars to be passed at build time
+ARG REACT_APP_API_BASE_URL
+ARG REACT_APP_ENV=production
+ENV REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL \
+    REACT_APP_ENV=$REACT_APP_ENV
 
-# Start development server with hot reload
-CMD ["npm", "start"] 
+RUN npm run build
+
+## Runtime stage (nginx)
+FROM nginx:1.27-alpine AS runtime
+
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Nginx config with reverse proxy to backend
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
