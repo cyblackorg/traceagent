@@ -87,6 +87,8 @@ const LogTable: React.FC<LogTableProps> = ({ logsData }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filteredLogs, setFilteredLogs] = useState<LogEntry[]>([]);
+  // INTENTIONAL VULNERABILITY: store raw query from URL for unsafe rendering
+  const [unsafeQuery, setUnsafeQuery] = useState<string>('');
 
   // Fetch available clients on component mount
   useEffect(() => {
@@ -109,6 +111,20 @@ const LogTable: React.FC<LogTableProps> = ({ logsData }) => {
 
     fetchClients();
   }, [user]);
+
+  // INTENTIONAL VULNERABILITY: Read search query from URL and render it unsafely
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get('q');
+      if (q) {
+        setSearchTerm(q);
+        setUnsafeQuery(q); // will be injected into DOM without sanitization
+      }
+    } catch (_) {
+      // ignore
+    }
+  }, []);
 
   // Fetch logs when client or source changes
   useEffect(() => {
@@ -375,6 +391,19 @@ const LogTable: React.FC<LogTableProps> = ({ logsData }) => {
             }}
           />
         </Box>
+
+        {/* INTENTIONAL VULNERABILITY: Unsafely render user-controlled query parameter */}
+        {unsafeQuery && (
+          <Box sx={{ mt: 1 }}>
+            <Typography variant="caption" color="text.secondary">
+              Showing results for (unsafe):
+            </Typography>
+            <Box
+              sx={{ mt: 0.5, p: 1, border: 1, borderColor: 'divider', borderRadius: 1 }}
+              dangerouslySetInnerHTML={{ __html: unsafeQuery }}
+            />
+          </Box>
+        )}
 
         {error && (
           <Alert severity="error" sx={{ mt: 2 }}>
