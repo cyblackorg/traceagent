@@ -3,10 +3,12 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-ENV NODE_OPTIONS=--max_old_space_size=2048
+ENV NODE_OPTIONS=--max_old_space_size=4096 \
+    GENERATE_SOURCEMAP=false \
+    CI=false
 
 COPY package*.json ./
-RUN npm ci || npm install
+RUN npm ci || npm install --no-fund --no-audit
 
 COPY . .
 
