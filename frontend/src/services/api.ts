@@ -112,7 +112,7 @@ class ApiService {
   // Health check
   async healthCheck(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/health`);
+      const response = await fetch(`${this.baseUrl}/health`);
       return response.ok;
     } catch (error) {
       console.error('Health check failed:', error);
@@ -123,7 +123,7 @@ class ApiService {
   // Get available clients
   async getClients(): Promise<Client[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/config`);
+      const response = await fetch(`${this.baseUrl}/config`);
       const config = await response.json();
       
       return Object.entries(config.clients || {}).map(([id, client]: [string, any]) => ({
@@ -141,7 +141,7 @@ class ApiService {
   // Get logs for a specific client and log type
   async getLogs(clientId: string, logType: string, searchQuery?: string, token?: string): Promise<LogData | null> {
     try {
-      let url = `${this.baseUrl}/api/logs/${clientId}/${logType}`;
+      let url = `${this.baseUrl}/logs/${clientId}/${logType}`;
       const params = new URLSearchParams();
       
       if (searchQuery) {
@@ -184,7 +184,7 @@ class ApiService {
         session_token: sessionToken
       };
 
-      const response = await fetch(`${this.baseUrl}/api/chat`, {
+      const response = await fetch(`${this.baseUrl}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -207,7 +207,7 @@ class ApiService {
   // Get all logs for admin view
   async getAllLogs(): Promise<any> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/admin/all-logs?bypass=true`, {
+      const response = await fetch(`${this.baseUrl}/admin/all-logs?bypass=true`, {
         headers: {
           'Admin-Token': 'admin-token-123'
         }
@@ -227,7 +227,7 @@ class ApiService {
   // Authentication methods
   async login(username: string, password: string): Promise<LoginResponse | null> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/auth/login`, {
+      const response = await fetch(`${this.baseUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -249,7 +249,7 @@ class ApiService {
 
   async verifyToken(token: string): Promise<TokenVerification | null> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/auth/verify`, {
+      const response = await fetch(`${this.baseUrl}/auth/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -270,7 +270,7 @@ class ApiService {
 
   async getUsers(): Promise<UserInfo[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/auth/users`);
+      const response = await fetch(`${this.baseUrl}/auth/users`);
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -285,7 +285,7 @@ class ApiService {
 
   async getUserDetails(username: string): Promise<UserInfo | null> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/auth/users/${username}`);
+      const response = await fetch(`${this.baseUrl}/auth/users/${username}`);
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
